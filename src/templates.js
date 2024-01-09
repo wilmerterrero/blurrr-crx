@@ -2,15 +2,21 @@
 
 import {
   APP_MAKER,
-  MENU_CONTENT_ID,
-  MENU_DONATE_ID,
-  MENU_FEEDBACK_ID,
-  MENU_ID,
-  MENU_REMOVE_ALL_ID,
-  MENU_STOP_ID,
   ICON_COLOR,
-} from "./constants.js";
-import { DONATE_SVG, FEEDBACK_SVG, STOP_SVG, TRASH_SVG } from "./assets.js";
+  MENU_ID,
+  MENU_CONTENT_ID,
+  MENU_STOP_ID,
+  MENU_REMOVE_ALL_ID,
+  MENU_FEEDBACK_ID,
+} from "./constants";
+
+import {
+  STOP_SVG,
+  FEEDBACK_SVG,
+  LICENSE_SVG,
+  SETTINGS_SVG,
+  TRASH_SVG,
+} from "./assets";
 
 export const floatingMenuTemplate = `
 <style>
@@ -19,7 +25,7 @@ export const floatingMenuTemplate = `
         position: fixed;
         top: 90%;
         left: 50%;
-        width: 350px !important;
+        width: 400px !important;
         height: auto !important;
         transform: translate(-50%, -50%);
         background-color: white;
@@ -57,6 +63,7 @@ export const floatingMenuTemplate = `
         padding: 0 !important;
         font-size: 12px !important;
         font-weight: 500 !important;
+        color: ${ICON_COLOR} !important;
         text-align: center !important;
     }
     label {
@@ -72,6 +79,7 @@ export const floatingMenuTemplate = `
         padding: 0 !important;
         font-size: 12px !important;
         font-weight: 500 !important;
+        color: ${ICON_COLOR} !important;
         text-align: center !important;
     }
 </style>
@@ -86,9 +94,13 @@ export const floatingMenuTemplate = `
         ${FEEDBACK_SVG}
         <label>Feedback/Bug</label>
       </button>
-      <button type="button" id="${MENU_DONATE_ID}">
-        ${DONATE_SVG}
-        <label>Donate</label>
+      <button type="button" id="${MENU_REMOVE_ALL_ID}">
+        ${SETTINGS_SVG}
+        <label>Settings</label>
+      </button>
+      <button type="button" id="${MENU_REMOVE_ALL_ID}">
+        ${LICENSE_SVG}
+        <label>License</label>
       </button>
       <button type="button" id="${MENU_REMOVE_ALL_ID}">
         ${TRASH_SVG}

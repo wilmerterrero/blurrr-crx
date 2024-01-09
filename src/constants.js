@@ -1,4 +1,4 @@
-export const APP = "blurrr";
+export const APP = "blurrr_crx";
 export const MENU_ID = "blurrr_menu";
 export const MENU_CONTENT_ID = "blurrr_menu_content";
 export const MENU_STOP_ID = "blurrr_menu_stop";
@@ -10,3 +10,4 @@ export const TRASH_SVG_ID = "blurrr_trash_svg";
 export const ICON_COLOR = "#3C4043";
 export const WARNING_COLOR = "#EA4B3A";
 export const APP_MAKER = "@wilterrero";
+export const LS_CONTAINER = `${APP}_blurredElements`;

@@ -3,68 +3,65 @@
 import { floatingMenuTemplate } from "../templates";
 import {
   APP,
-  MENU_ID,
   MENU_STOP_ID,
   MENU_REMOVE_ALL_ID,
   MENU_FEEDBACK_ID,
   MENU_DONATE_ID,
+  LS_CONTAINER,
 } from "../constants";
 
 // Blur mode
 let blurMode = false;
 
-// Listen for messages from the background script
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "toggleBlur") {
+    // Toggle blur mode
     blurMode = !blurMode;
-    if (blurMode) {
-      // Create a shadow host element
-      const shadowHost = document.createElement("div");
-      shadowHost.id = APP;
-      document.body.appendChild(shadowHost);
 
-      // Attach a shadow root to the shadow host
-      const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+    // Create a shadow host element
+    const shadowHost = document.createElement("div");
+    shadowHost.id = APP;
+    document.body.appendChild(shadowHost);
 
-      // Insert the HTML into the shadow root
-      shadowRoot.innerHTML = floatingMenuTemplate;
+    // Attach a shadow root to the shadow host
+    const shadowRoot = shadowHost.attachShadow({ mode: "open" });
 
-      // Add event listener to the document
-      document.addEventListener("click", handleElementClick, true);
+    // Insert the HTML into the shadow root
+    shadowRoot.innerHTML = floatingMenuTemplate;
 
-      // Add event listeners to the menu buttons
-      const menuStopButton = shadowRoot.getElementById(MENU_STOP_ID);
-      const menuRemoveAllButton = shadowRoot.getElementById(MENU_REMOVE_ALL_ID);
-      const menuFeedbackButton = shadowRoot.getElementById(MENU_FEEDBACK_ID);
-      const menuDonateButton = shadowRoot.getElementById(MENU_DONATE_ID);
+    // Add event listener to the document
+    document.addEventListener("click", handleElementClick, true);
 
-      if (menuStopButton) {
-        menuStopButton.addEventListener("click", function () {
-          handleStop();
-        });
-      }
+    // Add event listeners to the menu buttons
+    const menuStopButton = shadowRoot.getElementById(MENU_STOP_ID);
+    const menuRemoveAllButton = shadowRoot.getElementById(MENU_REMOVE_ALL_ID);
+    const menuFeedbackButton = shadowRoot.getElementById(MENU_FEEDBACK_ID);
+    const menuDonateButton = shadowRoot.getElementById(MENU_DONATE_ID);
 
-      if (menuRemoveAllButton) {
-        menuRemoveAllButton.addEventListener("click", function () {
-          removeBlurFromAll();
-        });
-      }
+    if (menuStopButton) {
+      menuStopButton.addEventListener("click", function () {
+        handleStop();
+      });
+    }
 
-      if (menuFeedbackButton) {
-        menuFeedbackButton.addEventListener("click", function () {
-          const feedbackUrl = "https://tally.so/r/3EWP74";
-          handleNavigate(feedbackUrl);
-        });
-      }
+    if (menuRemoveAllButton) {
+      menuRemoveAllButton.addEventListener("click", function () {
+        removeBlurFromAll();
+      });
+    }
 
-      if (menuDonateButton) {
-        menuDonateButton.addEventListener("click", function () {
-          const donateUrl = "https://www.buymeacoffee.com/wilmerterrero";
-          handleNavigate(donateUrl);
-        });
-      }
-    } else {
-      handleStop();
+    if (menuFeedbackButton) {
+      menuFeedbackButton.addEventListener("click", function () {
+        const feedbackUrl = "https://tally.so/r/3EWP74";
+        handleNavigate(feedbackUrl);
+      });
+    }
+
+    if (menuDonateButton) {
+      menuDonateButton.addEventListener("click", function () {
+        const donateUrl = "https://www.buymeacoffee.com/wilmerterrero";
+        handleNavigate(donateUrl);
+      });
     }
   }
 });
@@ -92,6 +89,7 @@ function handleStop() {
   blurMode = false;
   document.getElementById(APP).remove();
   document.removeEventListener("click", handleElementClick, true);
+  chrome.runtime.sendMessage({ action: "stop" });
 }
 
 function handleNavigate(url) {
@@ -118,36 +116,33 @@ function toggleBlur(element) {
 function saveBlurredElement(element) {
   const uniqueSelector = getUniqueSelector(element);
   const url = window.location.origin;
-  const blurredElements =
-    JSON.parse(localStorage.getItem("blurredElements")) || {};
+  const blurredElements = JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
 
   if (!blurredElements[url]) {
     blurredElements[url] = [];
   }
   blurredElements[url].push(uniqueSelector);
-  localStorage.setItem("blurredElements", JSON.stringify(blurredElements));
+  localStorage.setItem(LS_CONTAINER, JSON.stringify(blurredElements));
 }
 
 // Function to remove blurred elements
 function removeBlurredElement(element) {
   const uniqueSelector = getUniqueSelector(element);
   const url = window.location.origin;
-  const blurredElements =
-    JSON.parse(localStorage.getItem("blurredElements")) || {};
+  const blurredElements = JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
 
   if (blurredElements[url]) {
     blurredElements[url] = blurredElements[url].filter(
       (selector) => selector !== uniqueSelector
     );
-    localStorage.setItem("blurredElements", JSON.stringify(blurredElements));
+    localStorage.setItem(LS_CONTAINER, JSON.stringify(blurredElements));
   }
 }
 
 // Function to remove blur from all elements
 function removeBlurFromAll() {
   const url = window.location.origin;
-  const blurredElements =
-    JSON.parse(localStorage.getItem("blurredElements")) || {};
+  const blurredElements = JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
 
   if (blurredElements[url]) {
     blurredElements[url].forEach((selector) => {
@@ -227,38 +222,3 @@ function getUniqueSelector(element, maxDepth = 5) {
 
   return path.join(" > ");
 }
-
-// Function to load and reapply blur
-function loadAndApplyBlur() {
-  const url = window.location.origin;
-  const blurredElements =
-    JSON.parse(localStorage.getItem("blurredElements")) || {};
-
-  if (blurredElements[url]) {
-    blurredElements[url].forEach((selector) => {
-      try {
-        const element = document.querySelector(selector);
-        if (element) {
-          element.style.filter = "blur(8px)";
-        }
-      } catch (e) {
-        console.error(
-          `${MENU_ID}: Error applying blur to selector:`,
-          selector,
-          e
-        );
-      }
-    });
-  }
-}
-
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.addedNodes.length) {
-      // Load and apply blur to new elements
-      loadAndApplyBlur();
-    }
-  });
-});
-
-observer.observe(document.body, { childList: true, subtree: true });

@@ -18,7 +18,8 @@
                 "<all_urls>"
             ],
             "js": [
-                "content-script.js"
+                "content-script.js",
+                "observer.js"
             ],
             "run_at": "document_idle"
         }

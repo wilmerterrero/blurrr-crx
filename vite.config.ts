@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         background: resolve(__dirname, "src/crx/background.js"),
         "content-script": resolve(__dirname, "src/crx/content-script.js"),
+        observer: resolve(__dirname, "src/crx/observer.js"),
       },
       output: {
         dir: "dist",
