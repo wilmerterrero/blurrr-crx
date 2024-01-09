@@ -20,13 +20,14 @@ export default defineConfig({
         assetFileNames: "[name].js",
       },
       plugins: [
-        terser(),
         copy({
           targets: [
             { src: "manifest.json", dest: "dist" },
             { src: "icons", dest: "dist" },
           ],
+          hook: "writeBundle",
         }),
+        terser(),
         inline(),
       ],
       watch: {
