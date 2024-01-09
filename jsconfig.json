@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES6",
+    "module": "commonjs",
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["*.js"]
+}

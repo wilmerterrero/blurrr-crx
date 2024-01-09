@@ -1,0 +1,12 @@
+export const APP = "blurrr";
+export const MENU_ID = "blurrr_menu";
+export const MENU_CONTENT_ID = "blurrr_menu_content";
+export const MENU_STOP_ID = "blurrr_menu_stop";
+export const MENU_REMOVE_ALL_ID = "blurrr_menu_remove_all";
+export const MENU_DONATE_ID = "blurrr_menu_donate";
+export const MENU_FEEDBACK_ID = "blurrr_menu_feedback";
+export const STOP_SVG_ID = "blurrr_stop_svg";
+export const TRASH_SVG_ID = "blurrr_trash_svg";
+export const ICON_COLOR = "#3C4043";
+export const WARNING_COLOR = "#EA4B3A";
+export const APP_MAKER = "@wilterrero";
