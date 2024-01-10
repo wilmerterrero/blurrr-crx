@@ -9,8 +9,8 @@
     },
     "permissions": [
         "activeTab",
-        "scripting",
-        "tabs"
+        "tabs",
+        "storage"
     ],
     "content_scripts": [
         {

@@ -3,17 +3,29 @@
 import { floatingMenuTemplate } from "../templates";
 import {
   APP,
+  BLUR,
   MENU_STOP_ID,
   MENU_REMOVE_ALL_ID,
   MENU_FEEDBACK_ID,
-  MENU_DONATE_ID,
+  MENU_LICENSE_ID,
+  MENU_CONTENT_ID,
+  MENU_LICENSE_MODAL_ID,
+  MENU_LICENSE_INPUT_ID,
+  MENU_LICENSE_BUTTON_ID,
+  MENU_LICENSE_ADVICE_ID,
+  GUMROAD_PRODUCT_ID,
   LS_CONTAINER,
+  LS_LICENSE,
 } from "../constants";
 
 // Blur mode
 let blurMode = false;
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
   if (request.action === "toggleBlur") {
     // Toggle blur mode
     blurMode = !blurMode;
@@ -32,11 +44,24 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Add event listener to the document
     document.addEventListener("click", handleElementClick, true);
 
-    // Add event listeners to the menu buttons
+    const menuContent = shadowRoot.getElementById(MENU_CONTENT_ID);
     const menuStopButton = shadowRoot.getElementById(MENU_STOP_ID);
     const menuRemoveAllButton = shadowRoot.getElementById(MENU_REMOVE_ALL_ID);
     const menuFeedbackButton = shadowRoot.getElementById(MENU_FEEDBACK_ID);
-    const menuDonateButton = shadowRoot.getElementById(MENU_DONATE_ID);
+    const licenseButton = shadowRoot.getElementById(MENU_LICENSE_ID);
+    const licenseAdvice = shadowRoot.getElementById(MENU_LICENSE_ADVICE_ID);
+
+    // Check for license
+    const license = await getLicenseKey();
+
+    if (!license) {
+      licenseAdvice.style.display = "block";
+    } else {
+      licenseButton.style.display = "none";
+      licenseAdvice.style.display = "none";
+      menuContent.style.width = "300px";
+      menuFeedbackButton.style.marginLeft = "10px";
+    }
 
     if (menuStopButton) {
       menuStopButton.addEventListener("click", function () {
@@ -57,10 +82,48 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       });
     }
 
-    if (menuDonateButton) {
-      menuDonateButton.addEventListener("click", function () {
-        const donateUrl = "https://www.buymeacoffee.com/wilmerterrero";
-        handleNavigate(donateUrl);
+    if (licenseButton) {
+      licenseButton.addEventListener("click", function () {
+        const licenseModal = shadowRoot.getElementById(MENU_LICENSE_MODAL_ID);
+        licenseModal.style.display = "flex";
+
+        const licenseInput = shadowRoot.getElementById(MENU_LICENSE_INPUT_ID);
+        const licenseSubmitButton = shadowRoot.getElementById(
+          MENU_LICENSE_BUTTON_ID
+        );
+
+        let _license = "";
+        if (licenseInput) {
+          licenseInput.onchange = function (event) {
+            _license = event.target.value;
+          };
+        }
+
+        if (licenseSubmitButton) {
+          licenseSubmitButton.addEventListener("click", function () {
+            if (!_license) return;
+            fetch("https://api.gumroad.com/v2/licenses/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                product_id: GUMROAD_PRODUCT_ID,
+                license_key: _license,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  setLicenseKey(_license);
+                  licenseInput.value = "Valid! Reload the page.";
+                } else {
+                  licenseInput.value = "Invalid license";
+                }
+              })
+              .catch((error) => console.error("Error:", error));
+          });
+        }
       });
     }
   }
@@ -103,8 +166,8 @@ function handleNavigate(url) {
 function toggleBlur(element) {
   if (!blurMode) return;
 
-  if (element.style.filter !== "blur(8px)") {
-    element.style.filter = "blur(8px)";
+  if (element.style.filter !== BLUR) {
+    element.style.filter = BLUR;
     saveBlurredElement(element);
   } else {
     element.style.filter = "";
@@ -114,6 +177,10 @@ function toggleBlur(element) {
 
 // Function to save blurred elements
 function saveBlurredElement(element) {
+  // Check if license is valid
+  const license = getLicenseKey();
+  if (!license) return;
+
   const uniqueSelector = getUniqueSelector(element);
   const url = window.location.origin;
   const blurredElements = JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
@@ -141,21 +208,37 @@ function removeBlurredElement(element) {
 
 // Function to remove blur from all elements
 function removeBlurFromAll() {
-  const url = window.location.origin;
-  const blurredElements = JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
+  // Check if license is valid
+  const license = getLicenseKey();
 
-  if (blurredElements[url]) {
-    blurredElements[url].forEach((selector) => {
-      try {
-        const element = document.querySelector(selector);
-        if (element) {
-          element.style.filter = "";
-          // clean up the local storage
-          removeBlurredElement(element);
+  if (license) {
+    const url = window.location.origin;
+    const blurredElements =
+      JSON.parse(localStorage.getItem(LS_CONTAINER)) || {};
+    console.log(blurredElements[url]);
+
+    if (blurredElements[url]) {
+      blurredElements[url].forEach((selector) => {
+        try {
+          const element = document.querySelector(selector);
+          if (element) {
+            element.style.filter = "";
+            // clean up the local storage
+            removeBlurredElement(element);
+          }
+        } catch (e) {
+          console.error("Error removing blur from selector:", selector, e);
         }
-      } catch (e) {
-        console.error("Error removing blur from selector:", selector, e);
-      }
+      });
+    }
+  } else {
+    const runtimeBlurredElements = document.querySelectorAll(
+      `[style*='${BLUR}']`
+    );
+    runtimeBlurredElements.forEach((elem) => {
+      const uniqueSelector = getUniqueSelector(elem);
+      const element = document.querySelector(uniqueSelector);
+      element.style.filter = "";
     });
   }
 }
@@ -221,4 +304,13 @@ function getUniqueSelector(element, maxDepth = 5) {
   }
 
   return path.join(" > ");
+}
+
+async function getLicenseKey() {
+  const license = await chrome.storage.local.get([LS_LICENSE]);
+  return license[LS_LICENSE];
+}
+
+async function setLicenseKey(license) {
+  await chrome.storage.local.set({ [LS_LICENSE]: license });
 }

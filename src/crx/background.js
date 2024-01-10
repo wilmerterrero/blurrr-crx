@@ -22,3 +22,9 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   }
   return true;
 });
+
+chrome.runtime.onInstalled.addListener(function () {
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.runtime.setUninstallURL("https://tally.so/r/3qVPO5");
+  }
+});
