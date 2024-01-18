@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Blurrr",
-    "description": "Instantly blur your sensitive data while recording or screen sharing. No editing required.",
-    "version": "0.1.0",
+    "description": "Blur any element with a single click. Keep your privacy safe.",
+    "version": "0.1.1",
     "action": {},
     "background": {
         "service_worker": "background.js"

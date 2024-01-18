@@ -1,7 +1,6 @@
 "use strict";
 
 import {
-  APP_MAKER,
   ICON_COLOR,
   WARNING_COLOR,
   MENU_ID,
@@ -179,7 +178,6 @@ export const floatingMenuTemplate = `
     <p>
       Click on the elements you want to blur. 
     </p>
-    <span>Made by <a href="https://twitter.com/${APP_MAKER}" target="_blank">${APP_MAKER}</a></span>
   </div>
 </div>
 `;

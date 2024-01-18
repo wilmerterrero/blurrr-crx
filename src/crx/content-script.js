@@ -1,5 +1,6 @@
 "use strict";
 
+import { finder } from "@medv/finder";
 import { floatingMenuTemplate } from "../templates";
 import {
   APP,
@@ -227,7 +228,11 @@ function removeBlurFromAll() {
             removeBlurredElement(element);
           }
         } catch (e) {
-          console.error("Error removing blur from selector:", selector, e);
+          console.error(
+            `${APP} - Error removing blur from selector:`,
+            selector,
+            e
+          );
         }
       });
     }
@@ -244,67 +249,16 @@ function removeBlurFromAll() {
 }
 
 // Function to generate a unique selector for an element
-function getUniqueSelector(element, maxDepth = 5) {
-  let tagName = element.tagName.toLowerCase();
-
-  // For div elements
-  if (tagName === "div") {
-    // Check for dataset, id, title, or use nth-of-type
-    if (element.dataset && Object.keys(element.dataset).length > 0) {
-      const [dataKey, dataValue] = Object.entries(element.dataset)[0];
-      return `div[data-${dataKey}="${dataValue}"]`;
-    } else if (element.id) {
-      return `div#${element.id}`;
-    } else if (element.title) {
-      return `div[title="${element.title}"]`;
-    }
+function getUniqueSelector(element) {
+  if (!element || !(element instanceof Element)) {
+    throw new Error("Invalid element provided");
   }
-  // For img elements
-  else if (tagName === "img" && element.src) {
-    // Extract the src attribute directly as is
-    let srcAttr = element.getAttribute("src");
-
-    // Extract the URL part after the domain
-    let urlPath = srcAttr.split("/").slice(2).join("/");
-
-    // Create a selector that matches the end of the src attribute
-    return `img[src$="${urlPath}"]`;
-  }
-  // For a (link) elements
-  else if (tagName === "a" && element.href) {
-    // Normalize the href attribute to an absolute URL
-    let href = new URL(element.href, window.location.href).href;
-
-    // Use the starts-with selector for links as well
-    return `a[href^="${href}"]`;
-  } else if (element.id) {
-    return `#${element.id}`;
-  }
-  // For other elements with title
-  else if (element.title) {
-    return `*[title="${element.title}"]`;
-  }
-
-  // Fallback to nth-of-type
-  let path = [];
-  let depth = 0;
-
-  while (element && depth < maxDepth) {
-    let selector = element.tagName.toLowerCase();
-
-    let siblingIndex = Array.prototype.indexOf.call(
-      element.parentNode?.children || [],
-      element
-    );
-    selector += `:nth-of-type(${siblingIndex + 1})`;
-
-    path.unshift(selector);
-    element = element.parentElement;
-    depth++;
-  }
-
-  return path.join(" > ");
+  const selector = finder(element, {
+    className: (name) => !name.startsWith(APP),
+  })
+  return selector;
 }
+
 
 async function getLicenseKey() {
   const license = await chrome.storage.local.get([LS_LICENSE]);
