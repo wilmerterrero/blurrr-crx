@@ -153,7 +153,7 @@ export const floatingMenuTemplate = `
     <div id="${MENU_LICENSE_ADVICE_ID}">
       <p>
         <a href="${GUMROAD_PRODUCT_URL}" target="_blank">
-          FREE TRIAL: To save your changes, please activate a license.
+          FREE TRIAL: To save your changes, click to activate a license.
         </a>
       </p>
     </div>

@@ -1,6 +1,7 @@
 export const APP = "blurrr_crx";
 export const GUMROAD_PRODUCT_ID = "P14w9cplO1U6Xwc2qmwaAA==";
-export const GUMROAD_PRODUCT_URL = "https://tryblurrr.com";
+export const GUMROAD_PRODUCT_URL =
+  "https://wilterrero.gumroad.com/l/blurrr-chrome-extension";
 export const MENU_ID = "blurrr_menu";
 export const MENU_CONTENT_ID = "blurrr_menu_content";
 export const MENU_STOP_ID = "blurrr_menu_stop";
