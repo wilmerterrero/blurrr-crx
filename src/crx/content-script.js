@@ -31,6 +31,13 @@ chrome.runtime.onMessage.addListener(async function (
     // Toggle blur mode
     blurMode = !blurMode;
 
+    // check if the menu is already rendered
+    const menu = document.getElementById(APP);
+    if (menu) {
+      handleStop()
+      return;
+    }
+
     // Create a shadow host element
     const shadowHost = document.createElement("div");
     shadowHost.id = APP;
